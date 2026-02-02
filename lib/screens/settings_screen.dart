@@ -22,11 +22,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   List<Region> _regions = [];
   int? _selectedRegionId;
+  bool _showOnlyCommon = false;
   bool _analyticsEnabled = false;
   bool _isLoading = true;
 
   // SharedPreferences keys
   static const String _keyRegionId = 'selected_region_id';
+  static const String _keyShowOnlyCommon = 'show_only_common_species';
   static const String _keyAnalytics = 'analytics_enabled';
 
   @override
@@ -42,11 +44,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // Load saved preferences
     final prefs = await SharedPreferences.getInstance();
     final regionId = prefs.getInt(_keyRegionId);
+    final showOnlyCommon = prefs.getBool(_keyShowOnlyCommon) ?? false;
     final analytics = prefs.getBool(_keyAnalytics) ?? false;
 
     setState(() {
       _regions = regions;
       _selectedRegionId = regionId;
+      _showOnlyCommon = showOnlyCommon;
       _analyticsEnabled = analytics;
       _isLoading = false;
     });
@@ -63,6 +67,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     setState(() {
       _selectedRegionId = regionId;
+    });
+  }
+
+  Future<void> _saveShowOnlyCommon(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyShowOnlyCommon, value);
+
+    setState(() {
+      _showOnlyCommon = value;
     });
   }
 
@@ -104,6 +117,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: 'Location',
                   children: [
                     _buildRegionSelector(),
+                    const SizedBox(height: 16),
+                    _buildShowOnlyCommonToggle(),
                   ],
                 ),
                 const Divider(),
@@ -183,6 +198,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
           onChanged: _saveRegion,
         ),
       ],
+    );
+  }
+
+  Widget _buildShowOnlyCommonToggle() {
+    return SwitchListTile(
+      title: const Text('Show only common species'),
+      subtitle: Text(
+        'Hide uncommon and rare species in results',
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+      ),
+      value: _showOnlyCommon,
+      onChanged: _saveShowOnlyCommon,
+      contentPadding: EdgeInsets.zero,
     );
   }
 
