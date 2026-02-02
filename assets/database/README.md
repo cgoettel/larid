@@ -93,6 +93,52 @@ Always record:
 - License type
 - Source
 
+## Database Size Guidelines
+
+The app must remain lightweight to avoid becoming another bloated birding app. Target sizes:
+
+- **Base database**: 5-10MB for ~50 species (no embedded photos)
+- **Per-species offline photos**: 2-5MB (thumbnails + detail views)
+- **Total app with full offline data**: <500MB for all ABA North America species
+
+### Photo Storage Strategy
+
+**Hybrid approach** balancing offline capability with reasonable app size:
+
+1. **Database stores**: Photo URLs only (external sources: Macaulay Library, iNaturalist)
+2. **Initial install**: No photos bundled (keeps app download small)
+3. **Runtime behavior**:
+   - **Online**: Fetch photos from URLs, cache in device file system
+   - **Offline**: Use cached photos if available
+   - **User control**: "Download photos for offline use" setting
+     - Granular by region (e.g., "California", "Pacific Coast", "ABA North America")
+     - Leverages hierarchical regions table
+     - Users download only the gulls they'll actually see
+4. **Storage location**: Device file system cache (managed by OS), NOT in SQLite database
+5. **Cache management**: Photos can be cleared/re-downloaded to free space
+
+**Why this approach:**
+- Doesn't bloat database or initial app download
+- Users on wifi download what they need before field trips
+- Respects device storage (users control what's cached)
+- Still works fully offline after initial download
+
+### Text Efficiency
+
+Keep the database lean:
+
+- **Descriptions**: 1-2 sentences max per plumage
+- **Avoid redundancy**: Use structured characteristics instead of prose
+- **No duplicate data**: Normalization (BCNF) prevents duplication
+
+### Size Validation
+
+Before bundling database updates:
+
+- Check database file size: `ls -lh gull_id.db`
+- Verify size is reasonable for species count (~100KB per species max)
+- Document size in release notes if it grows significantly
+
 ## Validation
 
 Before deploying database updates:
@@ -101,5 +147,6 @@ Before deploying database updates:
 2. All characteristic values must be defined in characteristic_values table
 3. Region hierarchies must be valid (no circular references)
 4. Foreign key constraints must be satisfied
+5. Database file size is reasonable (<10MB for initial release)
 
 TODO: Create validation script

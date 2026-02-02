@@ -1,6 +1,6 @@
-# Contributing to Gull ID
+# Contributing to LarID
 
-Thank you for your interest in contributing to Gull ID! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to LarID! This document provides guidelines for contributing to the project.
 
 ## Code of Conduct
 
@@ -24,25 +24,53 @@ Be respectful and constructive in all interactions. We're here to build a useful
 
 3. **Install dependencies**
    ```bash
-   flutter pub get
+   make deps
+   # or: flutter pub get
    ```
 
 4. **Run the app**
-   ```bash
-   # Web
-   flutter run -d chrome
 
-   # iOS simulator (macOS only)
-   flutter run -d ios
+   We provide a Makefile for common tasks. See all available commands with:
+   ```bash
+   make help
+   ```
+
+   **Recommended workflow (iOS):**
+   ```bash
+   make run-ios
+   ```
+   This automatically:
+   - Launches the iOS Simulator if not running
+   - Waits for it to boot
+   - Finds the device ID
+   - Runs the app
+
+   **Other platforms:**
+   ```bash
+   # Web (Chrome)
+   make run
 
    # Android emulator
-   flutter run -d android
+   make run-android
+
+   # Manual device selection
+   make devices              # List available devices
+   flutter run -d <device-id>
    ```
 
 5. **Run tests**
    ```bash
-   flutter test
+   make test
+   # or: flutter test
    ```
+
+### Development Workflow
+
+**Hot Reload** - When the app is running, press `r` in the terminal to hot reload changes instantly (preserves app state).
+
+**Hot Restart** - Press `R` to restart the app from scratch (clears state).
+
+**Pro tip:** Run Flutter in a separate terminal so you can easily press `r` for hot reload while making changes in your editor.
 
 ### VS Code Setup
 
@@ -291,7 +319,7 @@ When adding features:
 
 By contributing, you agree that your contributions will be licensed under the GNU General Public License v3.0 (GPL-3.0). See the [LICENSE](LICENSE) file for details.
 
-This ensures that Gull ID and all derivative works remain free and open source for the birding community.
+This ensures that LarID and all derivative works remain free and open source for the birding community.
 
 ## Recognition
 
