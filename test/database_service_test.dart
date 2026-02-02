@@ -141,5 +141,61 @@ void main() {
       final photo = await db.getPhotoById(9999);
       expect(photo, isNull);
     });
+
+    group('regional filtering', () {
+      test('getSpeciesForRegion returns species with occurrence levels', () async {
+        final regions = await db.getAllRegions();
+        final california = regions.firstWhere((r) => r.name == 'California');
+
+        final results = await db.getSpeciesForRegion(california.id!);
+
+        // Should return species that occur in California
+        expect(results.length, greaterThan(0));
+
+        // Each result should have species and occurrence
+        for (final result in results) {
+          expect(result.species, isNotNull);
+          expect(result.occurrence, isIn(['common', 'uncommon', 'rare']));
+        }
+      });
+
+      test('getSpeciesForRegion with showOnlyCommon filters to common species', () async {
+        final regions = await db.getAllRegions();
+        final california = regions.firstWhere((r) => r.name == 'California');
+
+        final allResults = await db.getSpeciesForRegion(california.id!);
+        final commonOnly = await db.getSpeciesForRegion(
+          california.id!,
+          showOnlyCommon: true,
+        );
+
+        // Common-only results should be subset of all results
+        expect(commonOnly.length, lessThanOrEqualTo(allResults.length));
+
+        // All common-only results should have 'common' occurrence
+        for (final result in commonOnly) {
+          expect(result.occurrence, equals('common'));
+        }
+      });
+
+      test('getSpeciesForRegion with null regionId returns all species', () async {
+        final allSpecies = await db.getAllSpecies();
+        final results = await db.getSpeciesForRegion(null);
+
+        // Should return all species when no region filter
+        expect(results.length, equals(allSpecies.length));
+
+        // Occurrence should be null when no region context
+        for (final result in results) {
+          expect(result.occurrence, isNull);
+        }
+      });
+
+      test('getSpeciesForRegion returns empty for region with no species', () async {
+        // Region ID that doesn't exist or has no species
+        final results = await db.getSpeciesForRegion(9999);
+        expect(results, isEmpty);
+      });
+    });
   });
 }

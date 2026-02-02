@@ -13,6 +13,7 @@ import '../models/plumage_characteristic.dart';
 import '../models/region.dart';
 import '../models/species.dart';
 import '../models/species_region.dart';
+import '../models/species_with_occurrence.dart';
 
 /// Service for accessing the read-only gull identification database.
 ///
@@ -147,7 +148,7 @@ class DatabaseService {
                 id INTEGER PRIMARY KEY,
                 species_id INTEGER NOT NULL,
                 region_id INTEGER NOT NULL,
-                occurrence_frequency TEXT,
+                occurrence TEXT,
                 FOREIGN KEY (species_id) REFERENCES species(id),
                 FOREIGN KEY (region_id) REFERENCES regions(id)
               )
@@ -441,6 +442,54 @@ class DatabaseService {
       whereArgs: [regionId],
     );
     return List.generate(maps.length, (i) => SpeciesRegion.fromMap(maps[i]));
+  }
+
+  /// Gets species for a region with occurrence levels.
+  ///
+  /// Returns species that occur in the given region along with their occurrence
+  /// frequency (common, uncommon, rare). If [regionId] is null, returns all
+  /// species with null occurrence.
+  ///
+  /// If [showOnlyCommon] is true, filters to only species with 'common' occurrence.
+  Future<List<SpeciesWithOccurrence>> getSpeciesForRegion(
+    int? regionId, {
+    bool showOnlyCommon = false,
+  }) async {
+    final db = await database;
+
+    // No region selected - return all species without occurrence info
+    if (regionId == null) {
+      final species = await getAllSpecies();
+      return species
+          .map((s) => SpeciesWithOccurrence(species: s, occurrence: null))
+          .toList();
+    }
+
+    // Build query for species in the given region
+    // Note: column is 'occurrence' in bundled DB (model expects this)
+    String query = '''
+      SELECT s.*, sr.occurrence as occurrence
+      FROM species s
+      INNER JOIN species_regions sr ON s.id = sr.species_id
+      WHERE sr.region_id = ?
+    ''';
+
+    List<dynamic> args = [regionId];
+
+    if (showOnlyCommon) {
+      query += " AND sr.occurrence = 'common'";
+    }
+
+    query += ' ORDER BY s.taxonomic_order ASC, s.common_name ASC';
+
+    final List<Map<String, dynamic>> maps = await db.rawQuery(query, args);
+
+    return maps.map((map) {
+      return SpeciesWithOccurrence(
+        species: Species.fromMap(map),
+        occurrence: map['occurrence'] as String?,
+      );
+    }).toList();
   }
 
   /// Closes the database connection.

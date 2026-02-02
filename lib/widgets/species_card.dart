@@ -54,11 +54,20 @@ class SpeciesCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      species.commonName,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            species.commonName,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        if (result.occurrence != null &&
+                            result.occurrence != 'common')
+                          _buildOccurrenceChip(theme, result.occurrence!),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -83,6 +92,28 @@ class SpeciesCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOccurrenceChip(ThemeData theme, String occurrence) {
+    final isRare = occurrence == 'rare';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: isRare
+            ? theme.colorScheme.errorContainer
+            : theme.colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        occurrence,
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: isRare
+              ? theme.colorScheme.onErrorContainer
+              : theme.colorScheme.onSecondaryContainer,
         ),
       ),
     );

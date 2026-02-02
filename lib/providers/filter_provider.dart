@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/characteristic.dart';
 import '../models/characteristic_value.dart';
 import '../models/plumage.dart';
@@ -10,7 +11,15 @@ class PlumageResult {
   final Plumage plumage;
   final Species species;
 
-  PlumageResult({required this.plumage, required this.species});
+  /// Occurrence level in selected region (common/uncommon/rare).
+  /// Null when no region is selected.
+  final String? occurrence;
+
+  PlumageResult({
+    required this.plumage,
+    required this.species,
+    this.occurrence,
+  });
 }
 
 /// Provider managing filter state and real-time results for gull identification.
@@ -19,6 +28,10 @@ class PlumageResult {
 /// filtered results by querying plumages that match ALL selected criteria.
 class FilterProvider with ChangeNotifier {
   final DatabaseService _db = DatabaseService();
+
+  // SharedPreferences keys (must match settings_screen.dart)
+  static const String _keyRegionId = 'selected_region_id';
+  static const String _keyShowOnlyCommon = 'show_only_common_species';
 
   /// All available characteristics for filtering
   List<Characteristic> _characteristics = [];
@@ -36,6 +49,13 @@ class FilterProvider with ChangeNotifier {
   /// Loading state
   bool _isLoading = false;
 
+  /// Region filter settings
+  int? _selectedRegionId;
+  bool _showOnlyCommon = false;
+
+  /// Cached species for the selected region (with occurrence levels)
+  Map<int, String?> _speciesOccurrences = {};
+
   // Getters
   List<Characteristic> get characteristics => _characteristics;
   Map<int, List<CharacteristicValue>> get characteristicValues =>
@@ -44,13 +64,23 @@ class FilterProvider with ChangeNotifier {
   List<PlumageResult> get results => _results;
   bool get isLoading => _isLoading;
   bool get hasActiveFilters => _selectedValues.isNotEmpty;
+  int? get selectedRegionId => _selectedRegionId;
+  bool get showOnlyCommon => _showOnlyCommon;
 
-  /// Initializes the provider by loading characteristics and values.
+  /// Initializes the provider by loading characteristics, values, and region settings.
   Future<void> initialize() async {
     _isLoading = true;
     notifyListeners();
 
     try {
+      // Load region settings from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      _selectedRegionId = prefs.getInt(_keyRegionId);
+      _showOnlyCommon = prefs.getBool(_keyShowOnlyCommon) ?? false;
+
+      // Load species for selected region (caches occurrence levels)
+      await _loadRegionSpecies();
+
       // Load all characteristics
       _characteristics = await _db.getAllCharacteristics();
 
@@ -67,6 +97,38 @@ class FilterProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  /// Reloads region settings from SharedPreferences and refreshes results.
+  ///
+  /// Call this when returning from settings screen to pick up any changes.
+  Future<void> refreshRegionSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final newRegionId = prefs.getInt(_keyRegionId);
+    final newShowOnlyCommon = prefs.getBool(_keyShowOnlyCommon) ?? false;
+
+    // Only reload if settings changed
+    if (newRegionId != _selectedRegionId ||
+        newShowOnlyCommon != _showOnlyCommon) {
+      _selectedRegionId = newRegionId;
+      _showOnlyCommon = newShowOnlyCommon;
+      await _loadRegionSpecies();
+      await _loadResults();
+      notifyListeners();
+    }
+  }
+
+  /// Loads and caches species for the selected region.
+  Future<void> _loadRegionSpecies() async {
+    final speciesWithOccurrence = await _db.getSpeciesForRegion(
+      _selectedRegionId,
+      showOnlyCommon: _showOnlyCommon,
+    );
+
+    _speciesOccurrences = {
+      for (final swo in speciesWithOccurrence)
+        swo.species.id!: swo.occurrence,
+    };
   }
 
   /// Updates filter selection for a characteristic.
@@ -139,30 +201,48 @@ class FilterProvider with ChangeNotifier {
     _results = await _loadSpeciesForPlumages(plumages);
   }
 
-  /// Gets all plumages with their species information.
+  /// Gets all plumages with their species information, filtered by region.
   Future<List<PlumageResult>> _getAllPlumages() async {
     final species = await _db.getAllSpecies();
     final results = <PlumageResult>[];
 
     for (final sp in species) {
+      // Skip species not in the selected region
+      if (!_speciesOccurrences.containsKey(sp.id)) {
+        continue;
+      }
+
       final plumages = await _db.getPlumagesBySpeciesId(sp.id!);
       for (final plumage in plumages) {
-        results.add(PlumageResult(plumage: plumage, species: sp));
+        results.add(PlumageResult(
+          plumage: plumage,
+          species: sp,
+          occurrence: _speciesOccurrences[sp.id],
+        ));
       }
     }
 
     return results;
   }
 
-  /// Loads species information for a list of plumages.
+  /// Loads species information for a list of plumages, filtered by region.
   Future<List<PlumageResult>> _loadSpeciesForPlumages(
       List<Plumage> plumages) async {
     final results = <PlumageResult>[];
 
     for (final plumage in plumages) {
+      // Skip plumages for species not in the selected region
+      if (!_speciesOccurrences.containsKey(plumage.speciesId)) {
+        continue;
+      }
+
       final species = await _db.getSpeciesById(plumage.speciesId);
       if (species != null) {
-        results.add(PlumageResult(plumage: plumage, species: species));
+        results.add(PlumageResult(
+          plumage: plumage,
+          species: species,
+          occurrence: _speciesOccurrences[species.id],
+        ));
       }
     }
 

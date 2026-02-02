@@ -24,13 +24,17 @@ class MainScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.settings),
             tooltip: 'Settings',
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const SettingsScreen(),
                 ),
               );
+              // Refresh region settings when returning from settings
+              if (context.mounted) {
+                context.read<FilterProvider>().refreshRegionSettings();
+              }
             },
           ),
         ],
