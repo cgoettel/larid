@@ -2,6 +2,17 @@
 
 image: ghcr.io/cirruslabs/flutter:stable
 
+renovate:
+  image: renovate/renovate:43
+  variables:
+    RENOVATE_PLATFORM: gitlab
+    RENOVATE_ENDPOINT: https://gitlab.com/api/v4/
+    LOG_LEVEL: info
+  script:
+    - renovate colby.goettel/larid
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+
 stages:
   - test
   - build
@@ -21,9 +32,9 @@ test:
     - flutter pub get
     - flutter analyze
     - flutter test
-  only:
-    - branches
-    - merge_requests
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
 
 # Build Android APK
 build:android:
@@ -35,9 +46,11 @@ build:android:
     paths:
       - build/app/outputs/flutter-apk/app-release.apk
     expire_in: 30 days
-  only:
-    - main
-    - tags
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
 
 # Build iOS IPA (requires macOS runner - commented out for now)
 # build:ios:
@@ -65,9 +78,11 @@ build:web:
     paths:
       - build/web
     expire_in: 30 days
-  only:
-    - main
-    - merge_requests
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 # Deploy web app to GitLab Pages
 pages:
@@ -80,5 +95,7 @@ pages:
   artifacts:
     paths:
       - public
-  only:
-    - main
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
