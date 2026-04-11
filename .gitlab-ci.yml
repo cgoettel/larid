@@ -25,7 +25,7 @@ cache:
     - .dart_tool/
     - .packages
 
-# Run tests on all commits
+# Run tests on MR and feature branches — not on main (already passed before merge)
 test:
   stage: test
   script:
@@ -36,7 +36,7 @@ test:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
 
-# Build Android APK
+# Build Android APK on merge to main and tags
 build:android:
   stage: build
   script:
@@ -68,23 +68,7 @@ build:android:
 #     - main
 #     - tags
 
-# Build web app
-build:web:
-  stage: build
-  script:
-    - flutter pub get
-    - flutter build web --release --base-href "/$CI_PROJECT_NAME/"
-  artifacts:
-    paths:
-      - build/web
-    expire_in: 30 days
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      when: never
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-
-# Deploy web app to GitLab Pages
+# Build and deploy web app to GitLab Pages on merge to main
 pages:
   stage: deploy
   script:
