@@ -26,7 +26,7 @@ cache:
     - .packages
 
 # Run tests on MR and feature branches — not on main (already passed before merge)
-test:
+run_tests:
   stage: test
   script:
     - flutter pub get
