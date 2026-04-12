@@ -23,6 +23,11 @@
       "groupName": "sqflite"
     },
     {
+      "description": "Link cirruslabs/flutter image to Flutter release notes",
+      "matchPackageNames": ["ghcr.io/cirruslabs/flutter"],
+      "sourceUrl": "https://github.com/flutter/flutter"
+    },
+    {
       "description": "Auto-merge patch updates when CI passes",
       "matchUpdateTypes": [
         "patch"

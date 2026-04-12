@@ -1,6 +1,6 @@
 # GitLab CI/CD Configuration for Gull ID
 
-image: ghcr.io/cirruslabs/flutter:stable
+image: ghcr.io/cirruslabs/flutter:3.41.6
 
 renovate:
   image: renovate/renovate:43
