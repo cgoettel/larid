@@ -36,7 +36,7 @@ run_tests:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
 
-# Build Android APK on merge to main and tags
+# Build Android APK on MRs, merge to main, and tags
 build:android:
   stage: build
   script:
@@ -49,6 +49,7 @@ build:android:
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
 
@@ -68,7 +69,7 @@ build:android:
 #     - main
 #     - tags
 
-# Build web app on merge to main and tags
+# Build web app on MRs, merge to main, and tags
 build:web:
   stage: build
   script:
@@ -81,6 +82,7 @@ build:web:
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
 
