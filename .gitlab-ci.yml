@@ -105,12 +105,17 @@ pages:
 # Mirror main to github.com/cgoettel/larid after a successful main pipeline
 mirror_to_github:
   stage: mirror
-  image: alpine/git:latest
+  image:
+    name: alpine/git:latest
+    entrypoint: [""]
   variables:
     GIT_STRATEGY: clone
   before_script:
     - mkdir -p ~/.ssh && chmod 700 ~/.ssh
-    - cp "$GITHUB_DEPLOY_KEY" ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+    # glab strips trailing newline from variable values — re-add it
+    - cp "$GITHUB_DEPLOY_KEY" ~/.ssh/id_ed25519
+    - printf '\n' >> ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
     - ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
   script:
     - git remote add github git@github.com:cgoettel/larid.git
