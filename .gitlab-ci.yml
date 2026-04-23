@@ -17,6 +17,7 @@ stages:
   - test
   - build
   - deploy
+  - mirror
 
 # Cache Flutter dependencies for faster builds
 cache:
@@ -100,3 +101,19 @@ pages:
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: never
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# Mirror main to github.com/cgoettel/larid after a successful main pipeline
+mirror_to_github:
+  stage: mirror
+  image: alpine/git:latest
+  variables:
+    GIT_STRATEGY: clone
+  before_script:
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - cp "$GITHUB_DEPLOY_KEY" ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+    - ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+  script:
+    - git remote add github git@github.com:cgoettel/larid.git
+    - git push --force github HEAD:refs/heads/main
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
