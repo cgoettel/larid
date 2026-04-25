@@ -1,28 +1,36 @@
 # Claude Code Project Notes
 
-## Android toolchain: AGP pinned to 8.x
+## Android toolchain: AGP pinned to 8.x (Flutter has paused AGP 9 support)
 
-We've deliberately reverted to **AGP 8.13.2 / Gradle 8.14.4** and are no
-longer on AGP 9. Reason: Flutter's Gradle plugin throws a `NullPointerException`
-under AGP 9's new DSL, and the `android.newDsl=false` workaround triggers a
-secondary failure where Flutter plugins that apply `kotlin-android` (e.g.
-`package_info_plus` v10) conflict with AGP 9's pre-registered `kotlin`
-extension. None of the cirruslabs Flutter images we tested (`3.41.6`, `stable`,
-`beta` = `3.43.0-0.3.pre`) ship a fix.
+Current state: **AGP 8.13.2** with **Gradle 9.4.1** (Gradle 9 builds fine
+against AGP 8). We are intentionally not on AGP 9.
+
+The reason is upstream policy, not just a build error. Flutter has officially
+paused AGP 9 support — its migration guide (`docs.flutter.dev/release/breaking-changes/migrate-to-agp-9`)
+returns 404 and Flutter's docs explicitly say not to migrate yet. The pause is
+because AGP 9 makes Kotlin built-in and rejects the `kotlin-android` plugin,
+which every Flutter plugin's `android/build.gradle` still applies (sqflite_android,
+package_info_plus, shared_preferences_android, etc.). The plugin ecosystem has
+to migrate first; we can't fix it from the app side.
+
+Layers we've already cleared (don't re-test):
+
+- Flutter Gradle plugin NPE under AGP 9 — fixed in current Flutter (3.41.7)
+- Gradle 8.x too old for AGP 9.2.0 — Gradle 9.4.1 is now on main
+
+The remaining blocker is the kotlin-android plugin conflict in pub-sourced
+Flutter plugins.
 
 ### Watching for the unblock
 
-Renovate will keep opening MRs for:
+The signal we're waiting for is **Flutter resuming AGP 9 support**, not just
+a higher AGP or Gradle version. Concrete things to watch:
 
-- `com.android.application` major version 9.x
-- `ghcr.io/cirruslabs/flutter` newer tags
+- A `cirruslabs/flutter` image newer than `3.41.x` stable (currently all
+  3.42+ tags are `.pre` betas)
+- Flutter blog/release notes announcing AGP 9 support
+- The Flutter migration guide URL coming back online
 
-**When one of those MRs opens, try merging it.** A fix can come from either
-side — newer Flutter Gradle plugin, or newer AGP — and the quickest way to
-know it landed is to let the CI pipeline (including `build:android`) run
-against the bump.
-
-If the MR's pipeline passes green, merge it and remove this section from
-`CLAUDE.md`. If it fails the same way as before (Flutter Gradle plugin NPE,
-or kotlin-android extension conflict), close the MR with a reference to this
-file and wait for the next one.
+When any of those land, recreate the closed AGP 9 MR via the dependency
+dashboard and run a CI pipeline against it. If `build:android` is finally
+green, merge it and delete this section.
