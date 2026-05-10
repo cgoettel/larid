@@ -2,6 +2,10 @@
 
 image: ghcr.io/cirruslabs/flutter:3.41.9
 
+# Biweekly via an ISO-week parity gate: runs on even weeks, paired with the
+# finances repo on the same Saturday. Personal-site + smart-home occupy the
+# odd weeks. The CI schedule itself fires every Saturday; this gate is what
+# makes the cadence biweekly.
 renovate:
   image: renovate/renovate:43
   variables:
@@ -9,6 +13,12 @@ renovate:
     RENOVATE_ENDPOINT: https://gitlab.com/api/v4/
     LOG_LEVEL: info
   script:
+    - |
+      week=$(date +%V)
+      if [ $((10#$week % 2)) -ne 0 ]; then
+        echo "Skipping — ISO week $week is odd; larid + finances run on even weeks."
+        exit 0
+      fi
     - renovate colby.goettel/larid
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
