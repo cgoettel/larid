@@ -34,3 +34,14 @@ a higher AGP or Gradle version. Concrete things to watch:
 When any of those land, recreate the closed AGP 9 MR via the dependency
 dashboard and run a CI pipeline against it. If `build:android` is finally
 green, merge it and delete this section.
+
+## Renovate
+
+Dependency MRs in this repo are opened by the self-hosted Renovate bot
+running as a CronJob in the smart-home k3s cluster (namespace
+`renovate`). larid is **slot 0** of the 3-week ISO-week-mod-3 rotation
+— scanned every third Saturday, paired with cocktails (both Flutter).
+
+Run `/renovate larid` to review what the bot opened. Architecture,
+runbook, rollback procedure, token rotation:
+[smart-home/docs/renovate-bot.md](https://gitlab.com/colby.goettel/smart-home/-/blob/main/docs/renovate-bot.md).
