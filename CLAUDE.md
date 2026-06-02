@@ -45,3 +45,16 @@ running as a CronJob in the smart-home k3s cluster (namespace
 Run `/renovate larid` to review what the bot opened. Architecture,
 runbook, rollback procedure, token rotation:
 [smart-home/docs/renovate-bot.md](https://gitlab.com/colby.goettel/smart-home/-/blob/main/docs/renovate-bot.md).
+
+## Code review before MRs
+
+Run `/code-review` before opening an MR on any non-trivial logic change — an
+independent pass catches bugs that inline self-review misses (the same author
+reviewing their own diff carries the same blind spots), which matters most for
+AI-authored code. Default to `medium`/`high` effort; both run in-session on the
+existing plan.
+
+**The `ultra` tier is forbidden — never run it.** It executes a multi-agent
+review in the cloud and bills as metered extra usage on top of the subscription
+(reportedly ~$5–$20 per run), separate from and on top of the plan. There is no
+scenario where it is worth the charge.
