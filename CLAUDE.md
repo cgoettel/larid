@@ -22,19 +22,24 @@ The core conflict is unchanged: AGP 9 makes Kotlin built-in and rejects the
 at build time, letting the legacy plugin keep working *during migration*. Those
 flags are explicitly temporary and will be removed in a future Flutter.
 
-### Why we're still on AGP 8
+### Why we're still on AGP 8 (decision: wait for the plugins)
 
-Two reasons, neither a hard block anymore:
+Two reasons:
 
 1. The clean destination is the **built-in-Kotlin migration** (remove the
    `kotlin-android` plugin, adopt built-in Kotlin), not a bare AGP version bump.
-   A bare bump to AGP 9 only works by leaning on the temporary shim — that's
+   A bare bump to AGP 9 only builds by leaning on the temporary shim above —
    debt that breaks when Flutter removes the flags.
-2. The plugin ecosystem is still mid-migration (tracking: flutter#181383).
+2. The plugin ecosystem hasn't migrated yet (tracking: flutter#181383). Until
+   pub plugins (sqflite, package_info_plus, shared_preferences, …) drop
+   `kotlin-android`, the clean migration isn't possible from the app side.
 
-So this is now a *scheduled migration*, not a *wait for upstream*. The real
-work is the built-in-Kotlin migration; do it deliberately, don't auto-merge a
-Renovate AGP-9 version bump.
+**The decision (2026-06-13): stay on AGP 8 and wait.** AGP 8.13.2 is current
+and fully supported, and there's no deadline. Rather than adopt the temporary
+shim now and unwind it later, we wait for flutter#181383 to clear the plugin
+side, then do the clean built-in-Kotlin migration in one move — skipping the
+shim era entirely. Don't merge a Renovate AGP-9 version bump in the meantime.
+The clean migration is tracked in **larid#18**.
 
 ### CI probe result (2026-06-13)
 
