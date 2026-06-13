@@ -1,39 +1,55 @@
 # Claude Code Project Notes
 
-## Android toolchain: AGP pinned to 8.x (Flutter has paused AGP 9 support)
+## Android toolchain: AGP pinned to 8.x pending built-in-Kotlin migration
 
-Current state: **AGP 8.13.2** with **Gradle 9.4.1** (Gradle 9 builds fine
-against AGP 8). We are intentionally not on AGP 9.
+Current state: **AGP 8.13.2** with **Gradle 9.5.1**, Flutter **3.44.0** CI
+image, Kotlin plugin **2.4.0**. We are intentionally still on AGP 8 — but the
+reason changed in June 2026 (see below).
 
-The reason is upstream policy, not just a build error. Flutter has officially
-paused AGP 9 support — its migration guide (`docs.flutter.dev/release/breaking-changes/migrate-to-agp-9`)
-returns 404 and Flutter's docs explicitly say not to migrate yet. The pause is
-because AGP 9 makes Kotlin built-in and rejects the `kotlin-android` plugin,
-which every Flutter plugin's `android/build.gradle` still applies (sqflite_android,
-package_info_plus, shared_preferences_android, etc.). The plugin ecosystem has
-to migrate first; we can't fix it from the app side.
+### What changed: Flutter 3.44 resumed AGP 9 support
 
-Layers we've already cleared (don't re-test):
+Flutter previously *paused* AGP 9 support; that pause is over. Flutter 3.44
+(June 2026, first stable past 3.41.x) restored AGP 9 support via **built-in
+Kotlin**. The old migration guide URL (`migrate-to-agp-9`) still 404s — not
+because the work is paused, but because it was **renamed** to
+[`migrate-to-built-in-kotlin`](https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin).
+(So the old "is the URL back online?" watch check is now misleading — drop it.)
 
-- Flutter Gradle plugin NPE under AGP 9 — fixed in current Flutter (3.41.7)
-- Gradle 8.x too old for AGP 9.2.0 — Gradle 9.4.1 is now on main
+The core conflict is unchanged: AGP 9 makes Kotlin built-in and rejects the
+`kotlin-android` plugin that pub-sourced Flutter plugins still apply. Flutter
+3.44's fix is a **temporary compatibility shim** — its tooling auto-writes
+`android.builtInKotlin=false` and `android.newDsl=false` into `gradle.properties`
+at build time, letting the legacy plugin keep working *during migration*. Those
+flags are explicitly temporary and will be removed in a future Flutter.
 
-The remaining blocker is the kotlin-android plugin conflict in pub-sourced
-Flutter plugins.
+### Why we're still on AGP 8
 
-### Watching for the unblock
+Two reasons, neither a hard block anymore:
 
-The signal we're waiting for is **Flutter resuming AGP 9 support**, not just
-a higher AGP or Gradle version. Concrete things to watch:
+1. The clean destination is the **built-in-Kotlin migration** (remove the
+   `kotlin-android` plugin, adopt built-in Kotlin), not a bare AGP version bump.
+   A bare bump to AGP 9 only works by leaning on the temporary shim — that's
+   debt that breaks when Flutter removes the flags.
+2. The plugin ecosystem is still mid-migration (tracking: flutter#181383).
 
-- A `cirruslabs/flutter` image newer than `3.41.x` stable (currently all
-  3.42+ tags are `.pre` betas)
-- Flutter blog/release notes announcing AGP 9 support
-- The Flutter migration guide URL coming back online
+So this is now a *scheduled migration*, not a *wait for upstream*. The real
+work is the built-in-Kotlin migration; do it deliberately, don't auto-merge a
+Renovate AGP-9 version bump.
 
-When any of those land, recreate the closed AGP 9 MR via the dependency
-dashboard and run a CI pipeline against it. If `build:android` is finally
-green, merge it and delete this section.
+### CI probe result (2026-06-13)
+
+A bare AGP 9 bump MR was recreated via the dependency dashboard to probe
+whether `build:android` is green under AGP 9.2.1 + Flutter 3.44's shim. It
+**was green** — the build log showed `Upgrading gradle.properties` (the shim
+injecting flags) and a real `app-release.apk` built. The MR was **closed, not
+merged**: the shim flags live in the ephemeral CI workspace and aren't
+committed, so a bare bump isn't a clean AGP 9 state. Treat a green probe as
+information only — it confirms the shim carries our build, nothing more.
+
+Layers already cleared (don't re-test):
+
+- Flutter Gradle plugin NPE under AGP 9 — fixed in Flutter 3.41.7+
+- Gradle 8.x too old for AGP 9.2.0 — on Gradle 9.5.1 now
 
 ## Renovate
 
