@@ -14,6 +14,13 @@
   ],
   "packageRules": [
     {
+      "description": "Cap Gradle at the 9.5.x line: Gradle 9.6.0 removed the org.gradle.api.problems.internal.InternalProblems API that AGP 8.x relies on, so 9.6+ fails build:android while we stay on AGP 8. Lift this once the built-in-Kotlin / AGP 9 migration lands (larid#18).",
+      "matchPackageNames": [
+        "gradle"
+      ],
+      "allowedVersions": "< 9.6.0"
+    },
+    {
       "description": "Group sqflite family — versions must stay in sync",
       "matchPackageNames": [
         "sqflite",

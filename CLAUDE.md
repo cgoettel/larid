@@ -3,8 +3,16 @@
 ## Android toolchain: AGP pinned to 8.x pending built-in-Kotlin migration
 
 Current state: **AGP 8.13.2** with **Gradle 9.5.1**, Flutter **3.44.0** CI
-image, Kotlin plugin **2.4.0**. We are intentionally still on AGP 8 — but the
+image, Kotlin plugin **2.4.10**. We are intentionally still on AGP 8 — but the
 reason changed in June 2026 (see below).
+
+**Gradle is capped at the 9.5.x line while we stay on AGP 8.** Gradle 9.6.0
+removed the `org.gradle.api.problems.internal.InternalProblems` internal API
+that AGP 8.x relies on, so Gradle 9.6+ fails `build:android` with an
+[`agp_8x_incompatible`](https://docs.gradle.org/9.6.1/userguide/upgrading_version_9.html#agp_8x_incompatible)
+error. Renovate is pinned to `< 9.6.0` for `gradle` in `renovate.json`; a bare
+Gradle 9.6+ bump MR must not be merged. Lift the cap as part of the AGP 9 /
+built-in-Kotlin migration (larid#18).
 
 ### What changed: Flutter 3.44 resumed AGP 9 support
 
