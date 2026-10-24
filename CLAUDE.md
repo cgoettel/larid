@@ -1,5 +1,13 @@
 # Claude Code Project Notes
 
+## Roadmap
+
+Open items only; the issue tracker is the live source of truth.
+
+**Parked (someday, needs the owner present):**
+
+- [#21 "Staff-engineer handover: knowledge transfer and "what would you do differently?""](https://gitlab.com/colby.goettel/larid/-/work_items/21) (`Present`, `priority::someday`, milestone Platform) — a one-session exercise where an agent plays a staff engineer inheriting the repo: a knowledge-transfer interview with the owner (answers folded into the docs), then a proposal of what the agent would do differently, discussed before anything is filed. Deliberately parked; not running yet.
+
 ## Android toolchain: AGP pinned to 8.x pending built-in-Kotlin migration
 
 Current state: **AGP 8.13.2** with **Gradle 9.5.1**, Flutter **3.44.0** CI
