@@ -4,6 +4,10 @@
 
 Open items only; the issue tracker is the live source of truth.
 
+**Agent-ready:**
+
+- [#22 "Move the GitLab-to-GitHub mirror recipe out of agent memory"](https://gitlab.com/colby.goettel/larid/-/work_items/22) (`Agent-ready`, `priority::months`, milestone Platform) — the `mirror_to_github` recipe seven repos use lives only in agent memory; write it up as a doc and drop the toolchain memory that has drifted from this file.
+
 **Parked (someday, needs the owner present):**
 
 - [#21 "Staff-engineer handover: knowledge transfer and "what would you do differently?""](https://gitlab.com/colby.goettel/larid/-/work_items/21) (`Present`, `priority::someday`, milestone Platform) — a one-session exercise where an agent plays a staff engineer inheriting the repo: a knowledge-transfer interview with the owner (answers folded into the docs), then a proposal of what the agent would do differently, discussed before anything is filed. Deliberately parked; not running yet.
