@@ -7,6 +7,7 @@ Open items only; the issue tracker is the live source of truth.
 **Agent-ready:**
 
 - [#22 "Move the GitLab-to-GitHub mirror recipe out of agent memory"](https://gitlab.com/colby.goettel/larid/-/work_items/22) (`Agent-ready`, `priority::months`, milestone Platform) — the `mirror_to_github` recipe seven repos use lives only in agent memory; write it up as a doc and drop the toolchain memory that has drifted from this file.
+- [#23 "Add README badges"](https://gitlab.com/colby.goettel/larid/-/work_items/23) (`Agent-ready`, `priority::weeks`, milestone Platform) — pipeline and GPL-3.0 license badges at the top of the README, and run `run_tests` on `main` so the pipeline badge covers the tests, not just the builds.
 
 **Parked (someday, needs the owner present):**
 
