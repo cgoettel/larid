@@ -30,9 +30,15 @@
       "groupName": "sqflite"
     },
     {
-      "description": "Link cirruslabs/flutter image to Flutter release notes",
-      "matchPackageNames": ["ghcr.io/cirruslabs/flutter"],
+      "description": "Flutter CI images (Android for tests and the APK, web for Pages): bump together, linked to Flutter release notes",
+      "matchPackageNames": ["ghcr.io/gmeligio/flutter-android", "ghcr.io/gmeligio/flutter-web"],
+      "groupName": "flutter ci images",
       "sourceUrl": "https://github.com/flutter/flutter"
+    },
+    {
+      "description": "Flutter's settings plugin loader ships inside the Flutter SDK and is never published to Maven, so every lookup fails with a dashboard warning",
+      "matchPackageNames": ["dev.flutter.flutter-plugin-loader"],
+      "enabled": false
     },
     {
       "description": "Auto-merge patch updates when CI passes",
