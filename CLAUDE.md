@@ -8,9 +8,16 @@ gets its entry there, not here. This file is rules, architecture and current sta
 
 ## Android toolchain: AGP pinned to 8.x pending built-in-Kotlin migration
 
-Current state: **AGP 8.13.2** with **Gradle 9.5.1**, Flutter **3.44.0** CI
-image, Kotlin plugin **2.4.10**. We are intentionally still on AGP 8 — but the
+Current state: **AGP 8.13.2** with **Gradle 9.5.1**, Flutter **3.47.9** CI
+image, Kotlin plugin **2.4.21**. We are intentionally still on AGP 8 — but the
 reason changed in June 2026 (see below).
+
+**CI images: `ghcr.io/gmeligio/flutter-android`, plus `flutter-web` for
+`build:web`** (the Android image has web disabled; Renovate groups the two). The old
+`ghcr.io/cirruslabs/flutter` stopped publishing on May 1, 2026 (Cirrus Labs
+wound down after an acquisition; cirruslabs/docker-images-flutter#429), frozen
+at 3.44.0. gmeligio's image tracks Flutter stable, tags by exact version (no
+`latest`), and runs as a rootless `flutter` user.
 
 **Gradle is capped at the 9.5.x line while we stay on AGP 8.** Gradle 9.6.0
 removed the `org.gradle.api.problems.internal.InternalProblems` internal API
