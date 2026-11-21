@@ -19,7 +19,10 @@ pluginManagement {
 
 plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
-    id("com.android.application") version "8.13.2" apply false
+    id("com.android.application") version "9.5.2" apply false
+    // Never applied (Kotlin is built into AGP 9). Declaring it pins the Kotlin
+    // version AGP compiles with: the built-in default, 2.2.10, is below
+    // Flutter's 2.2.20 floor.
     id("org.jetbrains.kotlin.android") version "2.4.21" apply false
 }
 
