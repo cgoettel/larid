@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../providers/filter_provider.dart';
 
 /// Card widget displaying a species/plumage result item.
